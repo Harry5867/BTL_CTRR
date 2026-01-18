@@ -1,8 +1,8 @@
 from Graph import Graph
-from traversal import bfs, dfs
+from Traversal import bfs, dfs
 from Test import is_bipartite
-from dijkstra import dijkstra, get_path
-from convert import (
+from Dijkstra import dijkstra, get_path
+from Transform import (
     adj_list_to_adj_matrix,
     adj_list_to_edge_list
 )
