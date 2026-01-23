@@ -1,57 +1,117 @@
-from collections import deque
+# 4. Duyệt BFS, DFS
+import networkx as nx
+import matplotlib.pyplot as plt
 
-# =========================
-# BFS – Breadth First Search
-# Duyệt đồ thị theo chiều rộng
-# Sử dụng hàng đợi (queue)
-# =========================
+# Danh sách màu cho các đỉnh được duyệt theo thứ tự
+colors_sequence = ["gold", "lightgreen", "skyblue", "orange", "violet", "pink", "cyan", "magenta"]
+
+# Hàm duyệt BFS
 def bfs(graph, start):
-    # Kiểm tra đỉnh bắt đầu có tồn tại trong đồ thị không
-    if not graph.has_vertex(start):
-        return []
+    G = graph.graph
+    try:
+        bfs_tree = nx.bfs_tree(G, source=start)
+        visited = list(bfs_tree.nodes)
+        edges = list(bfs_tree.edges)
 
-    visited = set()              # Lưu các đỉnh đã được thăm
-    queue = deque([start])       # Hàng đợi phục vụ BFS
-    result = []                  # Lưu thứ tự duyệt các đỉnh
+        print("Duyệt BFS:", visited)
 
-    visited.add(start)
+        pos = nx.spring_layout(G, seed=42)
 
-    # Lặp cho đến khi hàng đợi rỗng
-    while queue:
-        u = queue.popleft()      # Lấy đỉnh đầu hàng đợi
-        result.append(u)         # Thêm vào kết quả duyệt
+        # Vẽ toàn bộ đồ thị nền
+        nx.draw(
+            G, pos,
+            with_labels=False,
+            node_color="lightgray",
+            node_size=1500,
+            font_size=13,
+            edge_color="gray",
+            width=2
+        )
 
-        # Duyệt các đỉnh kề của u
-        for v, _ in graph.get_neighbors(u):
-            if v not in visited:
-                visited.add(v)   # Đánh dấu đã thăm
-                queue.append(v)  # Đưa vào hàng đợi
+        # Tô các node theo thứ tự duyệt với màu khác nhau
+        for i, node in enumerate(visited):
+            nx.draw_networkx_nodes(
+                G, pos,
+                nodelist=[node],
+                node_color=colors_sequence[i % len(colors_sequence)],
+                node_size=1500
+            )
 
-    return result
+        # Tạo nhãn node kèm số thứ tự duyệt
+        labels_with_order = {node: f"{node}({i+1})" for i, node in enumerate(visited)}
+        nx.draw_networkx_labels(G, pos, labels=labels_with_order, font_size=13, font_weight="bold")
 
+        # Vẽ cạnh theo BFS
+        nx.draw_networkx_edges(
+            G, pos,
+            edgelist=edges,
+            edge_color="red",
+            width=3
+        )
 
-# =========================
-# DFS – Depth First Search
-# Duyệt đồ thị theo chiều sâu
-# Sử dụng đệ quy
-# =========================
+        # Trọng số cạnh
+        edge_labels = nx.get_edge_attributes(G, "weight")
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+
+        plt.title(f"Duyệt BFS từ {start}")
+        plt.show()
+        return visited
+    
+    # Xử lý ngoại lệ
+    except Exception as e:
+        print("Lỗi BFS:", e)
+
+# Hàm duyệt DFS
 def dfs(graph, start):
-    # Kiểm tra đỉnh bắt đầu có tồn tại trong đồ thị không
-    if not graph.has_vertex(start):
-        return []
+    G = graph.graph
+    try:
+        dfs_tree = nx.dfs_tree(G, source=start)
+        visited = list(dfs_tree.nodes)
+        edges = list(dfs_tree.edges)
 
-    visited = set()              # Lưu các đỉnh đã được thăm
-    result = []                  # Lưu thứ tự duyệt các đỉnh
+        print("Duyệt DFS:", visited)
 
-    # Hàm đệ quy hỗ trợ DFS
-    def dfs_util(u):
-        visited.add(u)           # Đánh dấu đỉnh u đã thăm
-        result.append(u)         # Thêm u vào kết quả
+        pos = nx.spring_layout(G, seed=42)
 
-        # Duyệt các đỉnh kề của u
-        for v, _ in graph.get_neighbors(u):
-            if v not in visited:
-                dfs_util(v)      # Gọi đệ quy cho đỉnh chưa thăm
+        # Vẽ toàn đồ thị nền
+        nx.draw(
+            G, pos,
+            with_labels=False,
+            node_color="lightgray",
+            node_size=1500,
+            font_size=13,
+            edge_color="gray",
+            width=2
+        )
 
-    dfs_util(start)
-    return result
+        # Tô node theo thứ tự duyệt với màu khác nhau
+        for i, node in enumerate(visited):
+            nx.draw_networkx_nodes(
+                G, pos,
+                nodelist=[node],
+                node_color=colors_sequence[i % len(colors_sequence)],
+                node_size=1500
+            )
+
+        # Tạo nhãn node kèm số thứ tự duyệt
+        labels_with_order = {node: f"{node}({i+1})" for i, node in enumerate(visited)}
+        nx.draw_networkx_labels(G, pos, labels=labels_with_order, font_size=13, font_weight="bold")
+
+        # Vẽ cạnh DFS
+        nx.draw_networkx_edges(
+            G, pos,
+            edgelist=edges,
+            edge_color="red",
+            width=3
+        )
+
+        # Trọng số cạnh
+        edge_labels = nx.get_edge_attributes(G, "weight")
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+
+        plt.title(f"Duyệt DFS từ {start}")
+        plt.show()
+        return visited
+    # Xử lý ngoại lệ
+    except Exception as e:
+        print("Lỗi DFS:", e)

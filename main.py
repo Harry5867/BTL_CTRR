@@ -1,130 +1,150 @@
-from Graph import Graph
-from Traversal import bfs, dfs
-from Test import is_bipartite
-from Dijkstra import dijkstra, get_path
-from Transform import (
-    adj_list_to_adj_matrix,
-    adj_list_to_edge_list
+from graph import Graph
+from visualize import visualize
+from save import save_graph
+from shortest_path import shortest_path
+from traversal import bfs, dfs
+from bipartite_check import is_bipartite
+from conversion import convert_graph_demo
+from algorithms_visualization import (
+    ford_fulkerson,
+    kruskal,
+    prim,
+    fleury,
+    hierholzer
 )
 
 
 def input_graph():
     print("\n=== NHẬP ĐỒ THỊ MỚI ===")
-    directed = input("Đồ thị có hướng? (y/n): ").lower() == "y"
-    weighted = input("Đồ thị có trọng số? (y/n): ").lower() == "y"
+    directed = input("Đồ thị có hướng? (y/n): ").strip().lower() == "y"
+    g = Graph(directed=directed)
 
-    g = Graph(directed=directed, weighted=weighted)
+    try:
+        m = int(input("Nhập số cạnh: "))
+    except ValueError:
+        print("Số cạnh phải là số nguyên!")
+        return None
 
-    m = int(input("Nhập số cạnh: "))
-    print("Nhập các cạnh theo dạng: u v w")
+    print("Nhập các cạnh theo dạng: u v weight")
 
-    for _ in range(m):
-        parts = input("Cạnh: ").split()
-        u, v = parts[0], parts[1]
-        w = float(parts[2]) if weighted else 1
-        g.add_edge(u, v, w)
+    for i in range(m):
+        try:
+            u, v, w = input(f"Cạnh {i+1}: ").split()
+            g.add_edge(u, v, float(w))
+        except ValueError:
+            print("Sai định dạng! Ví dụ đúng: A B 4")
+            return None
 
     print("Nhập đồ thị thành công!")
     return g
 
 
-def menu():
-    print("\n=== MENU CHÍNH ===")
-    print("1. Nhập đồ thị mới")
-    print("2. Hiển thị đồ thị (danh sách kề)")
-    print("3. BFS")
-    print("4. DFS")
-    print("5. Tìm đường đi ngắn nhất")
-    print("6. Kiểm tra đồ thị 2 phía")
-    print("7. Chuyển sang ma trận kề")
-    print("8. Chuyển sang danh sách cạnh")
-    print("0. Thoát")
-
+def require_graph(g):
+    if not g:
+        print("Bạn chưa nhập đồ thị!")
+        return False
+    return True
 
 def main():
     g = None
 
     while True:
-        menu()
-        choice = input("Chọn chức năng: ")
+        print("\n========== MENU CHÍNH ==========")
+        print("1. Nhập đồ thị mới")
+        print("2. Vẽ đồ thị")
+        print("3. Lưu đồ thị ra file PNG")
+        print("4. Tìm đường đi ngắn nhất")
+        print("5. Duyệt đồ thị (BFS & DFS)")
+        print("6. Kiểm tra đồ thị 2 phía")
+        print("7. Chuyển đổi biểu diễn đồ thị")
+        print("8. Trực quan hóa thuật toán")
+        print("0. Thoát")
+
+        choice = input("Chọn chức năng: ").strip()
 
         # 1. Nhập đồ thị
         if choice == "1":
             g = input_graph()
 
-        # 2. Hiển thị đồ thị
+        # 2. Vẽ đồ thị
         elif choice == "2":
-            if g:
-                print("\nDanh sách kề:")
-                print(g)
-            else:
-                print("Chưa có đồ thị")
+            if require_graph(g):
+                visualize(g)
 
-        # 3. BFS
+        # 3. Lưu đồ thị
         elif choice == "3":
-            if g:
-                start = input("Đỉnh bắt đầu BFS: ")
-                print("BFS:", bfs(g, start))
-            else:
-                print("Chưa có đồ thị")
+            if require_graph(g):
+                save_graph(g, "graph.png")
 
-        # 4. DFS
+        # 4. Đường đi ngắn nhất
         elif choice == "4":
-            if g:
-                start = input("Đỉnh bắt đầu DFS: ")
-                print("DFS:", dfs(g, start))
-            else:
-                print("Chưa có đồ thị")
+            if require_graph(g):
+                s = input("Đỉnh bắt đầu: ")
+                t = input("Đỉnh kết thúc: ")
+                shortest_path(g, s, t)
 
-        # 5. Dijkstra
+        # 5. BFS / DFS
         elif choice == "5":
-            if not g:
-                print("Chưa có đồ thị")
-                continue
-            if not g.weighted:
-                print("Dijkstra chỉ dùng cho đồ thị có trọng số")
-                continue
+            if require_graph(g):
+                start = input("Đỉnh bắt đầu: ")
+                bfs(g, start)
+                dfs(g, start)
 
-            s = input("Đỉnh bắt đầu: ")
-            t = input("Đỉnh kết thúc: ")
-            dist, prev = dijkstra(g, s)
-            print("Khoảng cách:", dist[t])
-            print("Đường đi:", get_path(prev, s, t))
-
-        # 6. Đồ thị hai phía
+        # 6. Kiểm tra đồ thị 2 phía
         elif choice == "6":
-            if g:
-                print("Đồ thị hai phía:", is_bipartite(g))
-            else:
-                print(" Chưa có đồ thị")
+            if require_graph(g):
+                is_bipartite(g)
 
-        # 7. Ma trận kề
+        # 7. Chuyển đổi biểu diễn
         elif choice == "7":
-            if g:
-                matrix, index = adj_list_to_adj_matrix(g)
-                print("Ma trận kề:")
-                for row in matrix:
-                    print(row)
-            else:
-                print("Chưa có đồ thị")
+            if require_graph(g):
+                convert_graph_demo(g)
 
-        # 8. Danh sách cạnh
+        # 8. Trực quan thuật toán
         elif choice == "8":
-            if g:
-                edges = adj_list_to_edge_list(g)
-                print("Danh sách cạnh:")
-                for e in edges:
-                    print(e)
+            if not require_graph(g):
+                continue
+
+            print("\n--- CHỌN THUẬT TOÁN ---")
+            print("1. Prim (MST)")
+            print("2. Kruskal (MST)")
+            print("3. Ford-Fulkerson (Max Flow)")
+            print("4. Fleury (Euler Path)")
+            print("5. Hierholzer (Euler Cycle)")
+
+            ch = input("Chọn: ").strip()
+
+            if ch == "1":
+                prim(g)
+
+            elif ch == "2":
+                kruskal(g)
+
+            elif ch == "3":
+                if not g.directed:
+                    print("Ford-Fulkerson yêu cầu đồ thị có hướng!")
+                else:
+                    s = input("Nguồn: ")
+                    t = input("Đích: ")
+                    ford_fulkerson(g, s, t)
+
+            elif ch == "4":
+                fleury(g)
+
+            elif ch == "5":
+                hierholzer(g)
+
             else:
-                print("Chưa có đồ thị")
+                print("Lựa chọn không hợp lệ!")
 
         # 0. Thoát
         elif choice == "0":
-            print("Thoát chương trình.")
+            print("Thoát chương trình!")
             break
 
         else:
             print("Lựa chọn không hợp lệ!")
+
 
 if __name__ == "__main__":
     main()
